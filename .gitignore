@@ -241,9 +241,9 @@ override.tf.json
 # Arquivos de variáveis que contêm segredos devem ser ignorados.
 # É uma boa prática usar um nome padrão para estes arquivos.
 # Descomente as linhas abaixo se você usar estes nomes para guardar segredos.
-# terraform.tfvars
-# *.auto.tfvars
-# secrets.tfvars
+terraform.tfvars
+*.auto.tfvars
+secrets.tfvars
 
 # ==============================================================================
 # Arquivos do Sistema Operacional e Editores
