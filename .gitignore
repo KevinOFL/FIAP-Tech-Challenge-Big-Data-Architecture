@@ -205,3 +205,55 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ==============================================================================
+# Arquivos e Diretórios Específicos do Terraform
+# ==============================================================================
+
+# Arquivos de estado locais. Eles podem conter segredos e senhas em texto puro.
+# NUNCA envie estes arquivos para um repositório Git.
+*.tfstate
+*.tfstate.backup
+
+# Arquivos de log de crash.
+crash.log
+crash.*.log
+
+# Diretório .terraform que contém os plugins dos provedores e módulos.
+# Este diretório é recriado automaticamente ao rodar "terraform init".
+.terraform/
+
+# Arquivos de plano salvos com "terraform plan -out=arquivo.tfplan".
+# Podem conter valores sensíveis.
+*.tfplan
+
+# Arquivos de override. Usados para substituições locais que não devem ser
+# compartilhadas com a equipe.
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# ==============================================================================
+# Arquivos de Variáveis - ATENÇÃO ESPECIAL
+# ==============================================================================
+
+# Arquivos de variáveis que contêm segredos devem ser ignorados.
+# É uma boa prática usar um nome padrão para estes arquivos.
+# Descomente as linhas abaixo se você usar estes nomes para guardar segredos.
+# terraform.tfvars
+# *.auto.tfvars
+# secrets.tfvars
+
+# ==============================================================================
+# Arquivos do Sistema Operacional e Editores
+# ==============================================================================
+
+# Windows
+Thumbs.db
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/

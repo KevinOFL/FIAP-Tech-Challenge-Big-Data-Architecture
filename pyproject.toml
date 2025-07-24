@@ -1,0 +1,18 @@
+[project]
+name = "fiap-tech-challenge-big-data-architecture"
+version = "0.1.0"
+description = "Projeto de entrega da fase 2 da pós graduação em Machine Learning Engineering na FIAP."
+authors = [
+    {name = "KevinOFL",email = "kevinsilvaofl@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "boto3 (>=1.39.12,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
