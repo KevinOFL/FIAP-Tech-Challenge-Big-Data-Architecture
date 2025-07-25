@@ -57,7 +57,7 @@ def executar_scraping():
     wait = WebDriverWait(driver, 20)
     proxima_tabela = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "li.pagination-next")))
     
-    # Acessamos a página e alteramos a lista de tabelas a cada loop do for, assim raspamos cada lista e adicionamos ao dataframe
+    # Acessamos a página e alteramos os dados da tabela a cada loop do for, assim raspamos cada dado e adicionamos ao dataframe
     for i in range(5):
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "tbody tr")))
         html_content = driver.page_source
@@ -66,34 +66,33 @@ def executar_scraping():
         dfs_list.append(df_pagina)
         proxima_tabela.click()
 
-    # Concatenamos as listas ao dataframe
+    # Concatenamos as listas ao dataframe caso possua algum dado, caso não, o processo é finalizado
     if dfs_list:
         df_final_completo = pd.concat(dfs_list, ignore_index=True)
         logging.info("Processo de paginação concluído. DataFrame final criado com sucesso.")
         logging.info(df_final_completo)
         logging.info(f"Total de linhas extraídas: {len(df_final_completo)}")
     else:
-        logging.warning("Nenhum dado foi extraído.")
-        df_final_completo = pd.DataFrame() # Cria um DataFrame vazio 
+        logging.warning("Nenhum dado foi extraído. Processo fianlizado!")
+        return None
     
-    if df_final_completo is not None:
-        logging.info("\nIniciando o upload para o S3...")
-        NOME_BUCKET_RAW = "big-data-architecture-fiap-fase-002" 
+    logging.info("\nIniciando o upload para o S3...")
+    NOME_BUCKET_RAW = "big-data-architecture-fiap-fase-002" 
         
-        data_hoje = datetime.today()
-        caminho_s3 = f"raw/ano={data_hoje.year}/mes={data_hoje.month:02d}/dia={data_hoje.day:02d}/b3_dados_brutos.parquet"
+    data_hoje = datetime.today()
+    caminho_s3 = f"raw/ano={data_hoje.year}/mes={data_hoje.month:02d}/dia={data_hoje.day:02d}/b3_dados_brutos.parquet"
 
-        buffer_parquet = io.BytesIO()
-        df_final_completo.to_parquet(buffer_parquet, index=False)
+    buffer_parquet = io.BytesIO()
+    df_final_completo.to_parquet(buffer_parquet, index=False)
 
-        try:
-            s3_client.put_object(
-                Bucket=NOME_BUCKET_RAW, Key=caminho_s3, Body=buffer_parquet.getvalue()
-            )
-            logging.info(f"Upload para s3://{NOME_BUCKET_RAW}/{caminho_s3} concluído.")
-        except Exception as e:
-            logging.error(f"Erro no upload para o S3: {e}")
-            return
+    try:
+        s3_client.put_object(
+            Bucket=NOME_BUCKET_RAW, Key=caminho_s3, Body=buffer_parquet.getvalue()
+        )
+        logging.info(f"Upload para s3://{NOME_BUCKET_RAW}/{caminho_s3} concluído.")
+    except Exception as e:
+        logging.error(f"Erro no upload para o S3: {e}")
+        return
 
 
 if __name__ == "__main__":
