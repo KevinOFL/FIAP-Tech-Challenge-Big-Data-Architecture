@@ -214,6 +214,7 @@ __marimo__/
 # NUNCA envie estes arquivos para um repositório Git.
 *.tfstate
 *.tfstate.backup
+*.terraform.lock.hcl
 
 # Arquivos de log de crash.
 crash.log
