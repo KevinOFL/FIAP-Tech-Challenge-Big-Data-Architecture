@@ -5,6 +5,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import Select
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -35,6 +36,8 @@ def executar_scraping():
     logging.info("Iniciando o processo de scraping da B3.")
     url = "https://sistemaswebb3-listados.b3.com.br/indexPage/day/IBOV?language=pt-br"
     
+    dfs_list = []
+    
     # Configurar opções do navegador
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Executa sem interface
@@ -49,27 +52,31 @@ def executar_scraping():
     logging.info("Aguardando o carregamento da página...")
     driver.get(url)
     logging.info(f"Página acessada. Aguardando a tabela ser carregada...")
-
+    
     # Espera explícita de até 20 segundos pelo elemento da tabela
     wait = WebDriverWait(driver, 20)
-    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "table")))
+    proxima_tabela = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "li.pagination-next")))
     
-    logging.info("Tabela encontrada. Extraindo HTML para o pandas.")
-    html_content = driver.page_source
-    
-    # O pandas lê o HTML e converte a tabela em um DataFrame
-    df_list = pd.read_html(io.StringIO(html_content), match='Código', attrs={'class': 'table'})
-    
-    if not df_list:
-        logging.error("Pandas não conseguiu extrair a tabela do HTML.")
-        return None
+    # Acessamos a página e alteramos a lista de tabelas a cada loop do for, assim raspamos cada lista e adicionamos ao dataframe
+    for i in range(5):
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "tbody tr")))
+        html_content = driver.page_source
+        # O pandas lê o HTML e converte a tabela em um DataFrame
+        df_pagina = pd.read_html(io.StringIO(html_content), match='Código', attrs={'class': 'table'})[0]
+        dfs_list.append(df_pagina)
+        proxima_tabela.click()
 
-    df = df_list[0]  
-   
-        
-    logging.info("Scraping concluído com sucesso.")
+    # Concatenamos as listas ao dataframe
+    if dfs_list:
+        df_final_completo = pd.concat(dfs_list, ignore_index=True)
+        logging.info("Processo de paginação concluído. DataFrame final criado com sucesso.")
+        logging.info(df_final_completo)
+        logging.info(f"Total de linhas extraídas: {len(df_final_completo)}")
+    else:
+        logging.warning("Nenhum dado foi extraído.")
+        df_final_completo = pd.DataFrame() # Cria um DataFrame vazio 
     
-    if df is not None:
+    if df_final_completo is not None:
         logging.info("\nIniciando o upload para o S3...")
         NOME_BUCKET_RAW = "big-data-architecture-fiap-fase-002" 
         
@@ -77,7 +84,7 @@ def executar_scraping():
         caminho_s3 = f"raw/ano={data_hoje.year}/mes={data_hoje.month:02d}/dia={data_hoje.day:02d}/b3_dados_brutos.parquet"
 
         buffer_parquet = io.BytesIO()
-        df.to_parquet(buffer_parquet, index=False)
+        df_final_completo.to_parquet(buffer_parquet, index=False)
 
         try:
             s3_client.put_object(
