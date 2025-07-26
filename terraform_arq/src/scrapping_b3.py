@@ -68,15 +68,22 @@ def executar_scraping():
 
     # Concatenamos as listas ao dataframe caso possua algum dado, caso não, o processo é finalizado
     if dfs_list:
-        df_final_completo = pd.concat(dfs_list, ignore_index=True)
+        df_concatenado = pd.concat(dfs_list, ignore_index=True)
+        df_concatenado = df_concatenado[df_concatenado["Código"] != "Redutor"]
+        df_concatenado = df_concatenado[df_concatenado["Código"] != "Quantidade Teórica Total"]
+        df_concatenado['valor_limpo'] = df_concatenado['Qtde. Teórica'].str.replace('.', '', regex=False)
+        df_concatenado['Qtde. Teórica'] = pd.to_numeric(df_concatenado["valor_limpo"])
+        df_concatenado['data'] = datetime.today().strftime("%d/%m/%Y")
+        df_final_completo = df_concatenado.rename(columns={"Código":"cod","Ação":'acao',"Tipo":"tipo","Qtde. Teórica":"qtde_teorica",  "Part. (%)":"part_teorica_porc"})
         logging.info("Processo de paginação concluído. DataFrame final criado com sucesso.")
+        
         logging.info(df_final_completo)
         logging.info(f"Total de linhas extraídas: {len(df_final_completo)}")
     else:
         logging.warning("Nenhum dado foi extraído. Processo fianlizado!")
         return None
     
-    logging.info("\nIniciando o upload para o S3...")
+    logging.info("Iniciando o upload para o S3...")
     NOME_BUCKET_RAW = "big-data-architecture-fiap-fase-002" 
         
     data_hoje = datetime.today()
@@ -86,9 +93,12 @@ def executar_scraping():
     df_final_completo.to_parquet(buffer_parquet, index=False)
 
     try:
+        buffer_parquet.seek(0)
+        
         s3_client.put_object(
             Bucket=NOME_BUCKET_RAW, Key=caminho_s3, Body=buffer_parquet.getvalue()
         )
+        
         logging.info(f"Upload para s3://{NOME_BUCKET_RAW}/{caminho_s3} concluído.")
     except Exception as e:
         logging.error(f"Erro no upload para o S3: {e}")

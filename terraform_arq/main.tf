@@ -61,14 +61,3 @@ resource "aws_s3_object" "refined" {
 data "aws_iam_role" "minha_role_existente" {
   name = "LabRole"
 }
-
-# Criação da função lambda
-#resource "aws_lambda_function" "scrapping_b3_lambda" {
-#  function_name = "aindaASerFeito"
-
-#  role = data.aws_iam_role.minha_role_existente.arn
-
-#  tags = {
-#   ManageBy = "Terraform"
-#  }
-#}
