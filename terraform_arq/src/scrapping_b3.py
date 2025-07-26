@@ -73,7 +73,7 @@ def executar_scraping():
         df_concatenado = df_concatenado[df_concatenado["Código"] != "Quantidade Teórica Total"]
         df_concatenado['valor_limpo'] = df_concatenado['Qtde. Teórica'].str.replace('.', '', regex=False)
         df_concatenado['Qtde. Teórica'] = pd.to_numeric(df_concatenado["valor_limpo"])
-        df_concatenado['data'] = datetime.today().strftime("%d/%m/%Y")
+        #df_concatenado['data'] = datetime.today().strftime("%d/%m/%Y")
         df_final_completo = df_concatenado.rename(columns={"Código":"cod","Ação":'acao',"Tipo":"tipo","Qtde. Teórica":"qtde_teorica",  "Part. (%)":"part_teorica_porc"})
         logging.info("Processo de paginação concluído. DataFrame final criado com sucesso.")
         
