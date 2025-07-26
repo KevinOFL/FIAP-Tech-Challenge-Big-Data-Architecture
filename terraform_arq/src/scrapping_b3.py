@@ -65,8 +65,16 @@ def executar_scraping():
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "tbody tr")))
         html_content = driver.page_source
         # O pandas lê o HTML e converte a tabela em um DataFrame
-        df_pagina = pd.read_html(io.StringIO(html_content), match='Código', attrs={'class': 'table'})[0]
+        df_pagina = pd.read_html(
+            io.StringIO(html_content),
+            match='Código',
+            attrs={'class': 'table'},
+            decimal=','
+        )[0]
+        
+        # Adicionamos a primeira lista da tabela a uma lista no python
         dfs_list.append(df_pagina)
+        # Vamos para a próxima lista
         proxima_tabela.click()
 
     # Concatenamos as listas ao dataframe caso possua algum dado, caso não, o processo é finalizado
@@ -80,6 +88,14 @@ def executar_scraping():
         # Ajustando o formato dos valores da tabela
         df_concatenado['valor_limpo'] = df_concatenado['Qtde. Teórica'].str.replace('.', '', regex=False)
         df_concatenado['Qtde. Teórica'] = pd.to_numeric(df_concatenado["valor_limpo"])
+        df_concatenado = df_concatenado.drop(axis=1, columns="valor_limpo")
+        
+        # Os dados estão no formato brasileiro: 0,10
+        # temos que mudar para o formato americano: 0.10
+        coluna_a_ser_limpada = df_concatenado["Part. (%)"].astype(str)
+        coluna_limpa = coluna_a_ser_limpada.str.replace(',','.', regex=False)
+        df_concatenado["Part. (%)"] = pd.to_numeric(coluna_limpa, errors="coerce") # Caso encontre algum error, 'coerce' faz com que o dado vire um NaN.
+        df_concatenado["Part. (%)"] = df_concatenado["Part. (%)"] / 1000
         
         # Renomeando as tabelas
         df_final_completo = df_concatenado.rename(columns={"Código":"cod","Ação":'acao',"Tipo":"tipo","Qtde. Teórica":"qtde_teorica",  "Part. (%)":"part_teorica_porc"})
