@@ -15,6 +15,11 @@ terraform {
   }
 }
 
+# Trazendo o IAM LabRole
+data "aws_iam_role" "minha_role_existente" {
+  name = "LabRole"
+}
+
 # Bloco de recurso. Define um recurso a ser criado na nuvem.
 # Neste caso, um bucket no serviço S3 da AWS.
 resource "aws_s3_bucket" "bucket_do_projeto" {
@@ -29,8 +34,6 @@ resource "aws_s3_bucket" "bucket_do_projeto" {
   }
   
 }
-
-
 
 resource "aws_s3_bucket_versioning" "versionamento_do_meu_bucket" {
   # Vincula esta configuração ao bucket criado acima, usando o ID do bucket.
@@ -59,9 +62,17 @@ resource "aws_s3_object" "refined" {
   content_type = "application/x-directory"
 }
 
-# Trazendo o IAM LabRole
-data "aws_iam_role" "minha_role_existente" {
-  name = "LabRole"
+# Criando o gatilho de invocação da lambda
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket = aws_s3_bucket.bucket_do_projeto.id # Bucket que acionara
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.scrapping_b3_lambda.arn # Função lambda
+    events = ["s3:ObjectCreated:Put", "s3:ObjectCreated:CompleteMultipartUpload"] # Qual o tipo de evento gatilho. No caso o de criação de um novo arquivo
+    filter_prefix = "raw/" # Gatilho só para a pasta raw/
+  }
+
+  depends_on = [ aws_lambda_permission.allow_s3_to_invoke ] # Dependencia da permissão acima
 }
 
 # Zipando o código fonte da função lambda
@@ -103,17 +114,4 @@ resource "aws_lambda_permission" "allow_s3_to_invoke" {
   function_name = aws_lambda_function.scrapping_b3_lambda.function_name # Função que será acionada
   principal = "s3.amazonaws.com" # Serviço que pode realizar a invocação
   source_arn = aws_s3_bucket.bucket_do_projeto.arn # Especificando qual S3 pode exclusivamente acionar
-}
-
-# Criando o gatilho de invocação da lambda
-resource "aws_s3_bucket_notification" "bucket_notification" {
-  bucket = aws_s3_bucket.bucket_do_projeto.id # Bucket que acionara
-
-  lambda_function {
-    lambda_function_arn = aws_lambda_function.scrapping_b3_lambda.arn # Função lambda
-    events = ["s3:ObjectCreated:Put", "s3:ObjectCreated:CompleteMultipartUpload"] # Qual o tipo de evento gatilho. No caso o de criação de um novo arquivo
-    filter_prefix = "raw/" # Gatilho só para a pasta raw/
-  }
-
-  depends_on = [ aws_lambda_permission.allow_s3_to_invoke ] # Dependencia da permissão acima
 }

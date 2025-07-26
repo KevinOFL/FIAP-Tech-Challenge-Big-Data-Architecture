@@ -5,7 +5,6 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import Select
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -20,11 +19,13 @@ load_dotenv()
 # Configura o logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
+# Variaveis de ambiente
 aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 aws_session_token = os.getenv("AWS_SESSION_TOKEN")  
 nome_bucket = os.getenv("NOME_BUCKET_RAW")
 
+# Criando agente boto3
 s3_client = boto3.client(
     "s3",
     aws_access_key_id=aws_access_key_id,
@@ -38,7 +39,7 @@ def executar_scraping():
     
     dfs_list = []
     
-    # Configurar opções do navegador
+    # Configurar opções do navegador para rodar em segundo plano
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Executa sem interface
     chrome_options.add_argument("--disable-gpu") # Necessário no Windows
@@ -50,7 +51,9 @@ def executar_scraping():
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
     
     logging.info("Aguardando o carregamento da página...")
+    
     driver.get(url)
+    
     logging.info(f"Página acessada. Aguardando a tabela ser carregada...")
     
     # Espera explícita de até 20 segundos pelo elemento da tabela
@@ -69,29 +72,36 @@ def executar_scraping():
     # Concatenamos as listas ao dataframe caso possua algum dado, caso não, o processo é finalizado
     if dfs_list:
         df_concatenado = pd.concat(dfs_list, ignore_index=True)
+        
+        # Limpando valores desnecessarios
         df_concatenado = df_concatenado[df_concatenado["Código"] != "Redutor"]
         df_concatenado = df_concatenado[df_concatenado["Código"] != "Quantidade Teórica Total"]
+        
+        # Ajustando o formato dos valores da tabela
         df_concatenado['valor_limpo'] = df_concatenado['Qtde. Teórica'].str.replace('.', '', regex=False)
         df_concatenado['Qtde. Teórica'] = pd.to_numeric(df_concatenado["valor_limpo"])
-        #df_concatenado['data'] = datetime.today().strftime("%d/%m/%Y")
-        df_final_completo = df_concatenado.rename(columns={"Código":"cod","Ação":'acao',"Tipo":"tipo","Qtde. Teórica":"qtde_teorica",  "Part. (%)":"part_teorica_porc"})
-        logging.info("Processo de paginação concluído. DataFrame final criado com sucesso.")
         
-        logging.info(df_final_completo)
+        # Renomeando as tabelas
+        df_final_completo = df_concatenado.rename(columns={"Código":"cod","Ação":'acao',"Tipo":"tipo","Qtde. Teórica":"qtde_teorica",  "Part. (%)":"part_teorica_porc"})
+        
+        logging.info("Processo de paginação concluído. DataFrame final criado com sucesso.")
         logging.info(f"Total de linhas extraídas: {len(df_final_completo)}")
     else:
         logging.warning("Nenhum dado foi extraído. Processo fianlizado!")
         return None
     
     logging.info("Iniciando o upload para o S3...")
-    NOME_BUCKET_RAW = "big-data-architecture-fiap-fase-002" 
-        
+    NOME_BUCKET_RAW = "big-data-architecture-fiap-fase-002"
+    
+    # Criando o caminho particionado dos dados no S3
     data_hoje = datetime.today()
     caminho_s3 = f"raw/ano={data_hoje.year}/mes={data_hoje.month:02d}/dia={data_hoje.day:02d}/b3_dados_brutos.parquet"
 
+    # Tranformando o dataframe em .parquet
     buffer_parquet = io.BytesIO()
     df_final_completo.to_parquet(buffer_parquet, index=False)
 
+    # Upload do arquivo para o bucket S3
     try:
         buffer_parquet.seek(0)
         
