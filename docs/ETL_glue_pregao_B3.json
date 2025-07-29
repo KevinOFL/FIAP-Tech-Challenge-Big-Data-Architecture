@@ -1,0 +1,822 @@
+{
+	"jobConfig": {
+		"name": "ETL_glue_pregao_B3",
+		"description": "ETL e criação de insights dos dados bruto inseridos no S3 do projeto de big data do pregão do dia da B3.",
+		"role": "arn:aws:iam::601505352183:role/LabRole",
+		"command": "glueetl",
+		"version": "5.0",
+		"runtime": null,
+		"workerType": "G.1X",
+		"numberOfWorkers": 2,
+		"maxCapacity": 2,
+		"jobRunQueuingEnabled": false,
+		"maxRetries": 0,
+		"timeout": 15,
+		"maxConcurrentRuns": 1,
+		"security": "none",
+		"scriptName": "ETL_pregao_B3.py",
+		"scriptLocation": "s3://aws-glue-assets-601505352183-us-east-1/scripts/",
+		"language": "python-3",
+		"spark": true,
+		"sparkConfiguration": "standard",
+		"jobParameters": [],
+		"tags": [],
+		"jobMode": "VISUAL_MODE",
+		"createdOn": "2025-07-26T19:59:41.666Z",
+		"developerMode": false,
+		"connectionsList": [],
+		"temporaryDirectory": "s3://aws-glue-assets-601505352183-us-east-1/temporary/",
+		"glueHiveMetastore": true,
+		"etlAutoTuning": true,
+		"metrics": true,
+		"observabilityMetrics": true,
+		"pythonPath": "s3://aws-glue-studio-transforms-510798373988-prod-us-east-1/gs_common.py,s3://aws-glue-studio-transforms-510798373988-prod-us-east-1/gs_now.py",
+		"bookmark": "job-bookmark-disable",
+		"sparkPath": "s3://aws-glue-assets-601505352183-us-east-1/sparkHistoryLogs/",
+		"flexExecution": true,
+		"minFlexWorkers": null,
+		"maintenanceWindow": null,
+		"dependentPath": "",
+		"additionalPythonModules": ""
+	},
+	"dag": {
+		"node-1753493513541": {
+			"nodeId": "node-1753493513541",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753818550892"
+			],
+			"name": "Total quantidade teorica dos ultimos 7 dias",
+			"generatedNodeName": "Totalquantidadeteoricadosultimos7dias_node1753493513541",
+			"classification": "Transform",
+			"type": "SqlCode",
+			"sqlAliases": [
+				{
+					"from": "node-1753818550892",
+					"alias": "myDataSource"
+				}
+			],
+			"outputSchemas": [
+				[
+					{
+						"key": "cod",
+						"fullPath": [
+							"cod"
+						],
+						"type": "string"
+					},
+					{
+						"key": "acao",
+						"fullPath": [
+							"acao"
+						],
+						"type": "string"
+					},
+					{
+						"key": "total_qtde_teorica_dos_ultimos_7_dias",
+						"fullPath": [
+							"total_qtde_teorica_dos_ultimos_7_dias"
+						],
+						"type": "long"
+					}
+				]
+			],
+			"parentsValid": true,
+			"calculatedType": "",
+			"sqlQuery": "SELECT\r\n  cod,\r\n  acao,\r\n  SUM(qtde_teorica) AS total_qtde_teorica_dos_ultimos_7_dias\r\nFROM\r\n  myDataSource\r\nWHERE\r\n  TO_DATE(timestamp) BETWEEN DATE_SUB(CURRENT_DATE(), 7) AND CURRENT_DATE()\r\nGROUP BY\r\n  cod,\r\n  acao\r\nORDER BY\r\n  total_qtde_teorica_dos_ultimos_7_dias DESC",
+			"codeGenVersion": 2
+		},
+		"node-1753496219510": {
+			"nodeId": "node-1753496219510",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753496209239"
+			],
+			"name": "Rename Field",
+			"generatedNodeName": "RenameField_node1753496219510",
+			"classification": "Transform",
+			"type": "RenameField",
+			"sourcePath": "timestamp",
+			"targetPath": "created_at",
+			"parentsValid": true,
+			"calculatedType": "",
+			"codeGenVersion": 2,
+			"outputSchemas": [
+				[
+					{
+						"key": "tipo",
+						"fullPath": [
+							"tipo"
+						],
+						"type": "string"
+					},
+					{
+						"key": "media_teorica_do_dia",
+						"fullPath": [
+							"media_teorica_do_dia"
+						],
+						"type": "double"
+					},
+					{
+						"key": "created_at",
+						"fullPath": [
+							"created_at"
+						],
+						"type": "string"
+					}
+				]
+			]
+		},
+		"node-1753493943373": {
+			"nodeId": "node-1753493943373",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753493791599"
+			],
+			"name": "Amazon S3",
+			"generatedNodeName": "AmazonS3_node1753493943373",
+			"classification": "DataSink",
+			"type": "S3",
+			"streamingBatchInterval": 100,
+			"format": "glueparquet",
+			"compression": "snappy",
+			"numberTargetPartitions": "0",
+			"path": "s3://big-data-architecture-fiap-fase-002/refined/",
+			"partitionKeys": [
+				"acao",
+				"created_at"
+			],
+			"schemaChangePolicy": {
+				"enableUpdateCatalog": true,
+				"updateBehavior": "UPDATE_IN_DATABASE",
+				"database": "default",
+				"table": "total_qtd_teorica_dos_ultimos_7_dias"
+			},
+			"updateCatalogOptions": "schemaAndPartitions",
+			"autoDataQuality": {
+				"isEnabled": true,
+				"evaluationContext": "EvaluateDataQuality_node1753493235607"
+			},
+			"calculatedType": "",
+			"codeGenVersion": 2
+		},
+		"node-1753493491651": {
+			"nodeId": "node-1753493491651",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753485356617"
+			],
+			"name": "Add Current Timestamp",
+			"generatedNodeName": "AddCurrentTimestamp_node1753493491651",
+			"classification": "Transform",
+			"type": "DynamicTransform",
+			"parameters": [
+				{
+					"name": "colName",
+					"displayName": "Timestamp column",
+					"isOptional": true,
+					"type": "str",
+					"description": "Name to use for the new column, by default: timestamp. With type \"string\" if a dataFormat is specified, otherwise \"timestamp\".",
+					"index": 0
+				},
+				{
+					"name": "dateFormat",
+					"displayName": "Timestamp format",
+					"type": "str",
+					"isOptional": true,
+					"description": "Optional pattern to format as a string, accepts most Python date format codes, such as '%Y-%m-%d %H:%M:%S'; as well as Spark patterns such as 'yyyy-MM-dd'T'HH:mm:ss.SSSZ'.",
+					"index": 1,
+					"value": [
+						"yyyy-MM-dd"
+					]
+				}
+			],
+			"functionName": "gs_now",
+			"path": "s3://aws-glue-studio-transforms-510798373988-prod-us-east-1/gs_now.py",
+			"version": "1.0.0",
+			"transformName": "gs_now",
+			"outputSchemas": [
+				[
+					{
+						"key": "cod",
+						"fullPath": [
+							"cod"
+						],
+						"type": "string"
+					},
+					{
+						"key": "acao",
+						"fullPath": [
+							"acao"
+						],
+						"type": "string"
+					},
+					{
+						"key": "tipo",
+						"fullPath": [
+							"tipo"
+						],
+						"type": "string"
+					},
+					{
+						"key": "qtde_teorica",
+						"fullPath": [
+							"qtde_teorica"
+						],
+						"type": "long"
+					},
+					{
+						"key": "part_teorica_porc",
+						"fullPath": [
+							"part_teorica_porc"
+						],
+						"type": "double"
+					},
+					{
+						"key": "valor_limpo",
+						"fullPath": [
+							"valor_limpo"
+						],
+						"type": "string"
+					},
+					{
+						"key": "timestamp",
+						"fullPath": [
+							"timestamp"
+						],
+						"type": "string"
+					}
+				]
+			],
+			"parentsValid": true,
+			"calculatedType": "",
+			"codeGenVersion": 2
+		},
+		"node-1753496245506": {
+			"nodeId": "node-1753496245506",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753496219510"
+			],
+			"name": "Amazon S3",
+			"generatedNodeName": "AmazonS3_node1753496245506",
+			"classification": "DataSink",
+			"type": "S3",
+			"streamingBatchInterval": 100,
+			"format": "glueparquet",
+			"compression": "snappy",
+			"numberTargetPartitions": "0",
+			"path": "s3://big-data-architecture-fiap-fase-002/refined/",
+			"partitionKeys": [
+				"created_at"
+			],
+			"schemaChangePolicy": {
+				"enableUpdateCatalog": true,
+				"updateBehavior": "UPDATE_IN_DATABASE",
+				"database": "default",
+				"table": "media_do_dia_por_tipo_acao"
+			},
+			"updateCatalogOptions": "schemaAndPartitions",
+			"autoDataQuality": {
+				"isEnabled": true,
+				"evaluationContext": "EvaluateDataQuality_node1753495354544"
+			},
+			"calculatedType": "",
+			"codeGenVersion": 2
+		},
+		"node-1753495292479": {
+			"nodeId": "node-1753495292479",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753494914926"
+			],
+			"name": "Rename Field",
+			"generatedNodeName": "RenameField_node1753495292479",
+			"classification": "Transform",
+			"type": "RenameField",
+			"sourcePath": "timestamp",
+			"targetPath": "created_at",
+			"parentsValid": true,
+			"calculatedType": "",
+			"codeGenVersion": 2
+		},
+		"node-1753494914926": {
+			"nodeId": "node-1753494914926",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753818550892"
+			],
+			"name": "Pregao B3 do dia",
+			"generatedNodeName": "PregaoB3dodia_node1753494914926",
+			"classification": "Transform",
+			"type": "SqlCode",
+			"sqlAliases": [
+				{
+					"from": "node-1753818550892",
+					"alias": "myDataSource"
+				}
+			],
+			"outputSchemas": [
+				[
+					{
+						"key": "cod",
+						"fullPath": [
+							"cod"
+						],
+						"type": "string"
+					},
+					{
+						"key": "acao",
+						"fullPath": [
+							"acao"
+						],
+						"type": "string"
+					},
+					{
+						"key": "tipo",
+						"fullPath": [
+							"tipo"
+						],
+						"type": "string"
+					},
+					{
+						"key": "qtde_teorica",
+						"fullPath": [
+							"qtde_teorica"
+						],
+						"type": "long"
+					},
+					{
+						"key": "part_teorica_porc",
+						"fullPath": [
+							"part_teorica_porc"
+						],
+						"type": "double"
+					},
+					{
+						"key": "timestamp",
+						"fullPath": [
+							"timestamp"
+						],
+						"type": "string"
+					}
+				]
+			],
+			"parentsValid": true,
+			"calculatedType": "",
+			"sqlQuery": "select * from myDataSource",
+			"codeGenVersion": 2
+		},
+		"node-1753493763122": {
+			"nodeId": "node-1753493763122",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753493513541"
+			],
+			"name": "Add Current Timestamp",
+			"generatedNodeName": "AddCurrentTimestamp_node1753493763122",
+			"classification": "Transform",
+			"type": "DynamicTransform",
+			"parameters": [
+				{
+					"name": "dateFormat",
+					"value": [
+						"yyyy-MM-dd"
+					],
+					"isOptional": true,
+					"type": "str",
+					"listType": null
+				}
+			],
+			"functionName": "gs_now",
+			"path": "s3://aws-glue-studio-transforms-510798373988-prod-us-east-1/gs_now.py",
+			"version": "1.0.0",
+			"transformName": "gs_now",
+			"outputSchemas": [
+				[
+					{
+						"key": "cod",
+						"fullPath": [
+							"cod"
+						],
+						"type": "string",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "acao",
+						"fullPath": [
+							"acao"
+						],
+						"type": "string",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "total_qtde_teorica_dos_ultimos_7_dias",
+						"fullPath": [
+							"total_qtde_teorica_dos_ultimos_7_dias"
+						],
+						"type": "bigint",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "timestamp",
+						"fullPath": [
+							"timestamp"
+						],
+						"type": "string",
+						"glueStudioType": null,
+						"children": null
+					}
+				]
+			],
+			"parentsValid": true,
+			"calculatedType": "",
+			"codeGenVersion": 2
+		},
+		"node-1753493791599": {
+			"nodeId": "node-1753493791599",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753493763122"
+			],
+			"name": "Rename Field",
+			"generatedNodeName": "RenameField_node1753493791599",
+			"classification": "Transform",
+			"type": "RenameField",
+			"sourcePath": "timestamp",
+			"targetPath": "created_at",
+			"parentsValid": true,
+			"calculatedType": "",
+			"codeGenVersion": 2
+		},
+		"node-1753494925396": {
+			"nodeId": "node-1753494925396",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753495292479"
+			],
+			"name": "Amazon S3",
+			"generatedNodeName": "AmazonS3_node1753494925396",
+			"classification": "DataSink",
+			"type": "S3",
+			"streamingBatchInterval": 100,
+			"format": "glueparquet",
+			"compression": "snappy",
+			"numberTargetPartitions": "0",
+			"path": "s3://big-data-architecture-fiap-fase-002/refined/",
+			"partitionKeys": [
+				"acao",
+				"created_at"
+			],
+			"schemaChangePolicy": {
+				"enableUpdateCatalog": true,
+				"updateBehavior": "UPDATE_IN_DATABASE",
+				"database": "default",
+				"table": "pregao_b3"
+			},
+			"updateCatalogOptions": "schemaAndPartitions",
+			"autoDataQuality": {
+				"isEnabled": true,
+				"evaluationContext": "EvaluateDataQuality_node1753493235607"
+			},
+			"calculatedType": "",
+			"codeGenVersion": 2
+		},
+		"node-1753496209239": {
+			"nodeId": "node-1753496209239",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753495798156"
+			],
+			"name": "Add Current Timestamp",
+			"generatedNodeName": "AddCurrentTimestamp_node1753496209239",
+			"classification": "Transform",
+			"type": "DynamicTransform",
+			"parameters": [
+				{
+					"name": "dateFormat",
+					"value": [
+						"yyyy-MM-dd"
+					],
+					"isOptional": true,
+					"type": "str",
+					"listType": null
+				}
+			],
+			"functionName": "gs_now",
+			"path": "s3://aws-glue-studio-transforms-510798373988-prod-us-east-1/gs_now.py",
+			"version": "1.0.0",
+			"transformName": "gs_now",
+			"outputSchemas": [
+				[
+					{
+						"key": "tipo",
+						"fullPath": [
+							"tipo"
+						],
+						"type": "string",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "media_teorica_do_dia",
+						"fullPath": [
+							"media_teorica_do_dia"
+						],
+						"type": "double",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "timestamp",
+						"fullPath": [
+							"timestamp"
+						],
+						"type": "string",
+						"glueStudioType": null,
+						"children": null
+					}
+				]
+			],
+			"parentsValid": true,
+			"calculatedType": "",
+			"codeGenVersion": 2
+		},
+		"node-1753495798156": {
+			"nodeId": "node-1753495798156",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [
+				"node-1753818550892"
+			],
+			"name": "Media teorica do dia por tipo",
+			"generatedNodeName": "Mediateoricadodiaportipo_node1753495798156",
+			"classification": "Transform",
+			"type": "SqlCode",
+			"sqlAliases": [
+				{
+					"from": "node-1753818550892",
+					"alias": "myDataSource"
+				}
+			],
+			"outputSchemas": [
+				[
+					{
+						"key": "tipo",
+						"fullPath": [
+							"tipo"
+						],
+						"type": "string"
+					},
+					{
+						"key": "media_teorica_do_dia",
+						"fullPath": [
+							"media_teorica_do_dia"
+						],
+						"type": "double"
+					}
+				]
+			],
+			"parentsValid": true,
+			"calculatedType": "",
+			"sqlQuery": "SELECT\ntipo,\n  AVG(qtde_teorica) AS media_teorica_do_dia\nFROM\n  myDataSource\nWHERE\n  CAST(timestamp AS DATE) = CURRENT_DATE()\nGROUP BY\n  tipo -- A coluna 'cod' foi adicionada aqui\nORDER BY\n  media_teorica_do_dia \nDESC",
+			"codeGenVersion": 2
+		},
+		"node-1753485356617": {
+			"nodeId": "node-1753485356617",
+			"dataPreview": false,
+			"previewAmount": 0,
+			"inputs": [],
+			"name": "Amazon S3",
+			"generatedNodeName": "AmazonS3_node1753485356617",
+			"classification": "DataSource",
+			"type": "S3",
+			"isCatalog": false,
+			"format": "parquet",
+			"paths": [
+				"s3://big-data-architecture-fiap-fase-002/raw/"
+			],
+			"compressionType": null,
+			"exclusions": [],
+			"groupFiles": null,
+			"groupSize": null,
+			"recurse": true,
+			"maxBand": null,
+			"maxFilesInBand": null,
+			"additionalOptions": {
+				"boundedSize": null,
+				"boundedFiles": null,
+				"enableSamplePath": false,
+				"samplePath": "s3://big-data-architecture-fiap-fase-002/raw/ano=2025/mes=07/dia=26/b3_dados_brutos.parquet",
+				"boundedOption": null
+			},
+			"outputSchemas": [
+				[
+					{
+						"key": "cod",
+						"fullPath": [
+							"cod"
+						],
+						"type": "string",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "acao",
+						"fullPath": [
+							"acao"
+						],
+						"type": "string",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "tipo",
+						"fullPath": [
+							"tipo"
+						],
+						"type": "string",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "qtde_teorica",
+						"fullPath": [
+							"qtde_teorica"
+						],
+						"type": "bigint",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "part_teorica_porc",
+						"fullPath": [
+							"part_teorica_porc"
+						],
+						"type": "double",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "valor_limpo",
+						"fullPath": [
+							"valor_limpo"
+						],
+						"type": "string",
+						"glueStudioType": null,
+						"children": null
+					},
+					{
+						"key": "data",
+						"fullPath": [
+							"data"
+						],
+						"type": "string",
+						"glueStudioType": null,
+						"children": null
+					}
+				]
+			],
+			"calculatedType": "",
+			"codeGenVersion": 2
+		},
+		"node-1753818550892": {
+			"classification": "Transform",
+			"type": "ApplyMapping",
+			"name": "Change Schema",
+			"inputs": [
+				"node-1753493491651"
+			],
+			"mapping": [
+				{
+					"toKey": "cod",
+					"fromPath": [
+						"cod"
+					],
+					"toType": "string",
+					"fromType": "string",
+					"dropped": false
+				},
+				{
+					"toKey": "acao",
+					"fromPath": [
+						"acao"
+					],
+					"toType": "string",
+					"fromType": "string",
+					"dropped": false
+				},
+				{
+					"toKey": "tipo",
+					"fromPath": [
+						"tipo"
+					],
+					"toType": "string",
+					"fromType": "string",
+					"dropped": false
+				},
+				{
+					"toKey": "qtde_teorica",
+					"fromPath": [
+						"qtde_teorica"
+					],
+					"toType": "long",
+					"fromType": "long",
+					"dropped": false
+				},
+				{
+					"toKey": "part_teorica_porc",
+					"fromPath": [
+						"part_teorica_porc"
+					],
+					"toType": "double",
+					"fromType": "double",
+					"dropped": false
+				},
+				{
+					"toKey": "valor_limpo",
+					"fromPath": [
+						"valor_limpo"
+					],
+					"toType": "string",
+					"fromType": "string",
+					"dropped": true
+				},
+				{
+					"toKey": "timestamp",
+					"fromPath": [
+						"timestamp"
+					],
+					"toType": "string",
+					"fromType": "string",
+					"dropped": false
+				}
+			],
+			"iconUrl": "https://a.b.cdn.console.awsstatic.com/a/v1/VFPMQFQP6ZE7OM6VW6PNDJG4G73K55LQF66ZAX2K7KJWH47BF7VQ/static/media/Apply-mapping.2595af12.svg",
+			"generatedNodeName": "ChangeSchema_node1753818550892",
+			"codeGenVersion": 2,
+			"outputSchemas": [
+				[
+					{
+						"key": "cod",
+						"fullPath": [
+							"cod"
+						],
+						"type": "string"
+					},
+					{
+						"key": "acao",
+						"fullPath": [
+							"acao"
+						],
+						"type": "string"
+					},
+					{
+						"key": "tipo",
+						"fullPath": [
+							"tipo"
+						],
+						"type": "string"
+					},
+					{
+						"key": "qtde_teorica",
+						"fullPath": [
+							"qtde_teorica"
+						],
+						"type": "long"
+					},
+					{
+						"key": "part_teorica_porc",
+						"fullPath": [
+							"part_teorica_porc"
+						],
+						"type": "double"
+					},
+					{
+						"key": "timestamp",
+						"fullPath": [
+							"timestamp"
+						],
+						"type": "string"
+					}
+				]
+			]
+		}
+	},
+	"hasBeenSaved": false,
+	"usageProfileName": null
+}
