@@ -24,6 +24,7 @@ aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 aws_session_token = os.getenv("AWS_SESSION_TOKEN")  
 nome_bucket = os.getenv("NOME_BUCKET_RAW")
+bucket_name = os.getenv("BUCKET_NAME")
 
 # Criando agente boto3
 s3_client = boto3.client(
@@ -107,7 +108,6 @@ def executar_scraping():
         return None
     
     logging.info("Iniciando o upload para o S3...")
-    NOME_BUCKET_RAW = "big-data-architecture-fiap-fase-002"
     
     # Criando o caminho particionado dos dados no S3
     data_hoje = datetime.today()
@@ -122,10 +122,10 @@ def executar_scraping():
         buffer_parquet.seek(0)
         
         s3_client.put_object(
-            Bucket=NOME_BUCKET_RAW, Key=caminho_s3, Body=buffer_parquet.getvalue()
+            Bucket=bucket_name, Key=caminho_s3, Body=buffer_parquet.getvalue()
         )
         
-        logging.info(f"Upload para s3://{NOME_BUCKET_RAW}/{caminho_s3} concluído.")
+        logging.info(f"Upload para s3://{bucket_name}/{caminho_s3} concluído.")
     except Exception as e:
         logging.error(f"Erro no upload para o S3: {e}")
         return

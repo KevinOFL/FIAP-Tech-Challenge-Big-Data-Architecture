@@ -20,6 +20,16 @@ variable "aws_session_token" {
 }
 
 variable "aws_default_region" {
-  description = "Região padrão da AWS para criar os recursos."
+  description = "Região padrão (us-east-1) da AWS para criar os recursos."
   type        = string
+}
+
+variable "bucket_name"{
+  description = "Nome único para o bucket."
+  type = string
+}
+
+variable "glue_name" {
+  description = "Nome do glue que irá ser acionado pela lambda."
+  type = string
 }

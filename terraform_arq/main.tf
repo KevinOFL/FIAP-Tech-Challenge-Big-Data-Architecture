@@ -25,7 +25,7 @@ data "aws_iam_role" "minha_role_existente" {
 resource "aws_s3_bucket" "bucket_do_projeto" {
   # O nome do bucket. PRECISA SER GLOBALMENTE ÚNICO!
   # Mude para algo único para você.
-  bucket = "big-data-architecture-fiap-fase-002"
+  bucket = var.bucket_name
 
   # Tags são etiquetas para organizar seus recursos.
   tags = {
@@ -85,7 +85,7 @@ data "archive_file" "lambda_zip" {
 # Criação da função lambda para fazer a ponte do arquivo para o Glue
 resource "aws_lambda_function" "scrapping_b3_lambda" {
   # Nome da função
-  function_name = "GlueTriggerlambda"
+  function_name = var.glue_name
   role = data.aws_iam_role.minha_role_existente.arn # Role para poder ter o poder de acessar o S3
 
   filename = data.archive_file.lambda_zip.output_path # Local onde se encontra o zip do código
