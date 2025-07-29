@@ -1,0 +1,5 @@
+AWS_ACCESS_KEY_ID = "Adicione sua chave pública."
+AWS_SECRET_ACCESS_KEY = "Adicione sua chave secreta."
+# AWS_SESSION_TOKEN = "Descomente caso sejá necessario o uso e adicione."
+AWS_DEFAULT_REGION = "us-east-1 - Default"
+BUCKET_NAME = "adicione o nome único do bucket que vocÊ irá criar."
