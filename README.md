@@ -23,7 +23,7 @@ Este repositório corresponde à entrega final da segunda fase do curso de pós-
 
 ## 📐 Arquitetura
 
-![Arquitetura do Projeto](docs/Arquitetura_AWS.svg)
+![Arquitetura do Projeto](docs/Arquitetura_AWS.png)
 
 ---
 
