@@ -263,3 +263,6 @@ teste.py
 # PNG e MP4
 .$Arquitetura_AWS.png.bkp
 *.mp4
+
+# Docs
+*docs~7e80ff9a8d3dd0716f71e39b49650d0ededc2adf*
