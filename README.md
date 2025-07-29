@@ -32,7 +32,7 @@ Este repositório corresponde à entrega final da segunda fase do curso de pós-
 * [Python 3.11+](https://www.python.org/downloads/)
 * [Terraform](https://developer.hashicorp.com/terraform/install) - Deve ter o executavel instalado na máquina.
 * [Poetry](https://python-poetry.org/docs/)
-* Criação de um job [Glue](https://aws.amazon.com/pt/glue/) via console AWS.
+* Criação de um job [Glue](https://aws.amazon.com/pt/glue/) via console AWS ou utilize o arquivo [ETL_glue_pregao.json](docs/ETL_glue_pregao_B3.json) do Glue utilizado no projeto.
 * Visualize o arquivo [env_example](env_example.txt) e crie um **.env** e edite conforme as suas necessidades.
 * Crie um arquivo chamado **terraform.tfvars** e replique as linhas do **.env** mas adicione mais uma var chamada **glue_name** onde contera o nome do job glue que você criou no console AWS.
 

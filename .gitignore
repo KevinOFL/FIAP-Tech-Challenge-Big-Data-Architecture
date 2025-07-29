@@ -260,5 +260,6 @@ Thumbs.db
 .vscode/
 teste.py
 
-# PNG
+# PNG e MP4
 .$Arquitetura_AWS.png.bkp
+*.mp4
