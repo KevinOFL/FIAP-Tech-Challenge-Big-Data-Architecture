@@ -1,6 +1,4 @@
-Repositoria do tech challenger da fase 2 da pós em Machine learning Engineering
-
-# 📘 FIAP-Tech-Challenge-Big-Data-Architecture
+# 📘 FIAP Tech Challenge Big Data Architecture in AWS - Fase 2
 
 ETL dos dados do pregão diário do site da [B3](https://sistemaswebb3-listados.b3.com.br/indexPage/theorical/IBOV?language=pt-br), contendo um script de raspagem e pré-tratamento dos dados com pandas que deve ser acionado diáriamente para uma base sólida de dados. Seguindo para uma arquitetura em nuvem formada por terraform sendo infraestrutura como código.
 
@@ -23,7 +21,7 @@ Este repositório corresponde à entrega final da segunda fase do curso de pós-
 
 ## 📐 Arquitetura
 
-![Arquitetura do Projeto](docs/Arquitetura_AWS.png)
+<img src="docs/Arquitetura_AWS.png" alt="Arquitetura do projeto">
 
 ---
 
