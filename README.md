@@ -64,4 +64,4 @@ Pull requests são bem-vindos! Abra uma issue ou contribua diretamente via fork 
 
 ## 📃 Licença
 
-Este projeto está licenciado sob os termos da licença MIT.
+Este projeto está licenciado sob os termos da licença [MIT](LICENSE).
