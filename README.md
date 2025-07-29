@@ -36,7 +36,7 @@ Este repositório corresponde à entrega final da segunda fase do curso de pós-
 * Visualize o arquivo [env_example](env_example.txt) e crie um **.env** e edite conforme as suas necessidades.
 * Crie um arquivo chamado **terraform.tfvars** e replique as linhas do **.env** mas adicione mais uma var chamada **glue_name** onde contera o nome do job glue que você criou no console AWS.
 
-### 📂 Instalação via Poetry
+### 📂 Instalação via Poetry e inicialização da infra via Terraform
 
 ```bash
 git clone https://github.com/camilapiva/embrapa-api.git
